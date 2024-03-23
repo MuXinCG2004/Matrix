@@ -15,13 +15,14 @@ private:
     int size;
     T * element;
 public:
+    Matrix() : line(0), row(0), size(0) {};
     Matrix(int line, int row);
     Matrix(const Matrix<T> & rhs);
     Matrix<T> operator+(const Matrix<T> & rhs);
     Matrix<T> operator*(const Matrix<T> & rhs);
     void operator+=(const Matrix<T> & rhs);
     void operator*=(const Matrix<T> & rhs);
-    long long determinant();
+    T determinant();
     Matrix<T> inverse();
     Matrix<T> transpose();
     Matrix<T> operator*(const T & rhs);

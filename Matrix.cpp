@@ -52,16 +52,8 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> & rhs)
                     temp.element[i * temp.row + j] += this->element[i * this->row + k] * rhs.element[k * rhs.row + j];
             }
         }
-        return temp;
     }
-    else
-    {
-        temp.line = 0;
-        temp.row = 0;
-        temp.size = 0;
-        std::cerr << "Error multiply!";
-        return temp;
-    }
+    return temp;
 }
 
 template<typename U>
@@ -128,9 +120,9 @@ void Matrix<T>::operator*=(const Matrix<T> & rhs)
 }
 
 template<typename T>
-long long Matrix<T>::determinant()
+T Matrix<T>::determinant()
 {
-    long long result = 0;
+    T result = 0;
     if (this->line == this->row)
     {
         if (this->line == 1)
@@ -162,69 +154,6 @@ long long Matrix<T>::determinant()
     {
         std::cerr << "Error determinant!";
         return 0;
-    }
-}
-
-template<typename T>
-Matrix<T> Matrix<T>::inverse()
-{
-    Matrix<T> temp;
-    if (this->line == this->row)
-    {
-        long long det = this->determinant();
-        if (det == 0)
-        {
-            std::cerr << "Error inverse!";
-            return temp;
-        }
-        else
-        {
-            temp.line = this->line;
-            temp.row = this->row;
-            temp.size = this->size;
-            temp.element = new T[temp.size];
-            for (int i = 0; i < this->line; i++)
-            {
-                for (int j = 0; j < this->row; j++)
-                {
-                    Matrix<T> temp1(this->line - 1, this->row - 1);
-                    for (int k = 0; k < this->line; k++)
-                    {
-                        if (k < i)
-                        {
-                            for (int l = 0; l < this->row; l++)
-                            {
-                                if (l < j)
-                                    temp1.element[k * temp1.row + l] = this->element[k * this->row + l];
-                                else if (l > j)
-                                    temp1.element[k * temp1.row + l - 1] = this->element[k * this->row + l];
-                            }
-                        }
-                        else if (k > i)
-                        {
-                            for (int l = 0; l < this->row; l++)
-                            {
-                                if (l < j)
-                                    temp1.element[(k - 1) * temp1.row + l] = this->element[k * this->row + l];
-                                else if (l > j)
-                                    temp1.element[(k - 1) * temp1.row + l - 1] = this->element[k * this->row + l];
-                            }
-                        }
-                    }
-                    if ((i + j) % 2 == 0)
-                        temp.element[i * temp.row + j] = temp1.determinant();
-                    else
-                        temp.element[i * temp.row + j] = -temp1.determinant();
-                }
-            }
-            temp *= 1 / det;
-            return temp;
-        }
-    }
-    else
-    {
-        std::cerr << "Error inverse!";
-        return temp;
     }
 }
 
@@ -307,6 +236,32 @@ Matrix<T> Matrix<T>::adjoint()
     else
     {
         std::cerr << "Error adjoint!";
+        return temp;
+    }
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::inverse()
+{
+    Matrix<T> temp(this->line, this->row);
+    if (this->line == this->row)
+    {
+        T det = this->determinant();
+        if (det == 0)
+        {
+            std::cerr << "Error inverse!";
+            return temp;
+        }
+        else
+        {
+            temp = this->adjoint().transpose();
+            temp = (1 / det) * temp;
+            return temp;
+        }
+    }
+    else
+    {
+        std::cerr << "Error inverse!";
         return temp;
     }
 }
