@@ -27,6 +27,7 @@ public:
     Matrix<T> transpose();
     Matrix<T> operator*(const T & rhs);
     Matrix<T> adjoint();
+    Matrix<T> echelon();
     ~Matrix();
 };
 

@@ -12,6 +12,16 @@ Matrix<T>::Matrix(int line, int row)
 }
 
 template<typename T>
+Matrix<T>::Matrix(const Matrix<T> & rhs)
+{
+    this->line = rhs.line;
+    this->row = rhs.row;
+    this->size = rhs.size;
+    this->element = new T[this->size];
+    std::copy(rhs.element, rhs.element + this->size, this->element);
+}
+
+template<typename T>
 Matrix<T> Matrix<T>::operator+(const Matrix<T> & rhs)
 {
     Matrix<T> temp(this->line, this->row);
@@ -241,23 +251,98 @@ Matrix<T> Matrix<T>::adjoint()
 }
 
 template<typename T>
+Matrix<T> Matrix<T>::echelon()
+{
+    Matrix<T> temp(*this);
+    int i = 0, j = 0;
+    while (i < temp.line && j < temp.row)
+    {
+        int k = i;
+        while (k < temp.line && temp.element[k * temp.row + j] == 0)
+            k++;
+        if (k == temp.line)
+        {
+            j++;
+            continue;
+        }
+        if (k != i)
+        {
+            for (int l = 0; l < temp.row; l++)
+                std::swap(temp.element[i * temp.row + l], temp.element[k * temp.row + l]);
+        }
+        for (int l = 0; l < temp.line; l++)
+        {
+            if (l != i && temp.element[l * temp.row + j] != 0)
+            {
+                T ratio = temp.element[l * temp.row + j] / temp.element[i * temp.row + j];
+                for (int m = 0; m < temp.row; m++)
+                    temp.element[l * temp.row + m] -= ratio * temp.element[i * temp.row + m];
+            }
+        }
+        i++;
+        j++;
+    }
+    return temp;
+}
+
+template<typename T>
 Matrix<T> Matrix<T>::inverse()
 {
-    Matrix<T> temp(this->line, this->row);
-    if (this->line == this->row)
+    Matrix<T> temp(*this);
+    if (temp.line == temp.row)
     {
-        T det = this->determinant();
-        if (det == 0)
+        Matrix<T> result(temp.line, temp.row);
+        for (int i = 0; i < temp.line; i++)
         {
-            std::cerr << "Error inverse!";
-            return temp;
+            for (int j = 0; j < temp.row; j++)
+            {
+                if (i == j)
+                    result.element[i * result.row + j] = 1;
+                else
+                    result.element[i * result.row + j] = 0;
+            }
         }
-        else
+        int i = 0, j = 0;
+        while (i < temp.line && j < temp.row)
         {
-            temp = this->adjoint().transpose();
-            temp = (1 / det) * temp;
-            return temp;
+            int k = i;
+            while (k < temp.line && temp.element[k * temp.row + j] == 0)
+                k++;
+            if (k == temp.line)
+            {
+                j++;
+                continue;
+            }
+            if (k != i)
+            {
+                for (int l = 0; l < temp.row; l++)
+                {
+                    std::swap(temp.element[i * temp.row + l], temp.element[k * temp.row + l]);
+                    std::swap(result.element[i * result.row + l], result.element[k * result.row + l]);
+                }
+            }
+            T ratio = temp.element[i * temp.row + j];
+            for (int l = 0; l < temp.row; l++)
+            {
+                temp.element[i * temp.row + l] /= ratio;
+                result.element[i * result.row + l] /= ratio;
+            }
+            for (int l = 0; l < temp.line; l++)
+            {
+                if (l != i && temp.element[l * temp.row + j] != 0)
+                {
+                    ratio = temp.element[l * temp.row + j];
+                    for (int m = 0; m < temp.row; m++)
+                    {
+                        temp.element[l * temp.row + m] -= ratio * temp.element[i * temp.row + m];
+                        result.element[l * result.row + m] -= ratio * result.element[i * result.row + m];
+                    }
+                }
+            }
+            i++;
+            j++;
         }
+        return result;
     }
     else
     {
